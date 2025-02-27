@@ -1,6 +1,4 @@
-class Book {
-
-
+class Review {
 
     constructor(dbconn){
         this.db = dbconn;
@@ -29,7 +27,7 @@ class Book {
        // this.add(this.owner, this.title, this.author, this.edition, this.condition)
     }
     
-    async add(userId, boodId, content){
+    async add(userId, bookId, content){
         let query = `INSERT INTO reviews (id, userId, bookId, content VALUES (NULL, '${userId}', '${bookId}', '${content}')`;
         console.log(query)
         return this._query(query);
@@ -40,33 +38,9 @@ class Book {
     async findById(id) {
         let query = `SELECT * FROM reviews WHERE id='${id}'`;
         console.log(query)
+
         let result = await this._query(query);
-
-        if (result != 'undefined' && result.length > 0) {
-            this.id = result[0].id;
-            this.owner = result[0].ownerId
-            this.title = result[0].title
-            this.author = result[0].author
-            this.edition = result[0].edition
-            this.condition = result[0].preservation
-        }
-
-        return result;
-    }
-    
-    async findByAuthorTitle(author, title) {
-        let query = `SELECT * FROM books WHERE author='${author}' OR title='${title}'`;
-        console.log(query)
-        let result = await this._query(query);
-
-        if (result != 'undefined' && result.length > 0) {
-            this.id = result[0].id;
-            this.owner = result[0].ownerId
-            this.title = result[0].title
-            this.author = result[0].author
-            this.edition = result[0].edition
-            this.condition = result[0].preservation
-        }
+        console.log(result)
 
         return result;
     }
@@ -74,7 +48,7 @@ class Book {
     /* UPDATE */
 
     update(){
-        let query = `UPDATE books SET ownerId = '${this.owner}', title = '${this.title}', author = '${this.author}', edition = '${this.edition}', preservation = '${this.condition}' WHERE books.id = ${this.id}`;
+        let query = `UPDATE reviews SET content = '${this.content}'`;
         console.log(query)
         return this._query(query);
     }
@@ -82,7 +56,7 @@ class Book {
     /* DELETE */
 
     delete(){
-        let query = `DELETE FROM books WHERE books.id = ${this.id}`;
+        let query = `DELETE FROM reviews WHERE reviews.id = ${this.id}`;
         console.log(query)
         return this._query(query);
     }
@@ -102,4 +76,4 @@ class Book {
     }
 }
 
-module.exports = Book;
+module.exports = Review;

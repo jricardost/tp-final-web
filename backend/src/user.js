@@ -61,7 +61,7 @@ class User {
     /* UPDATE */
     
     update(){
-        let query = `UPDATE users SET name = '${this.name}', email = '${this.email}', passwd = '${this.password}' WHERE users.id = ${this.id}`;
+        let query = `UPDATE users SET name = '${this.name}', passwd = '${this.password}' WHERE users.id = ${this.id}`;
         return this._query(query);
     }
     

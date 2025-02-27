@@ -52,8 +52,24 @@ async function main(){
         }
         
         case 'find-author': {
-            let res = await book.findByAuthorTitle("Autor 1", "Livro 1")
+            let res = await book.findByTitle("Autor 1", "Livro 1")
             book.dump();
+            break;
+        }
+
+        case 'owned': {
+
+            let i = (process.argv.length == 4) ? process.argv[3] : 1
+
+            await book.findOwnedBy(i)
+            break;
+        }
+
+
+        case 'available': {
+            let i = (process.argv.length == 4) ? process.argv[3] : 1
+
+            let res = await book.findAvailableTo(i)
             break;
         }
         
