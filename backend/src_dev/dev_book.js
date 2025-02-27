@@ -65,6 +65,12 @@ async function main(){
             break;
         }
 
+        case 'all': {
+            let i = (process.argv.length == 4) ? process.argv[3] : 1
+
+            let res = await book.findAll()
+            break;
+        }
 
         case 'available': {
             let i = (process.argv.length == 4) ? process.argv[3] : 1

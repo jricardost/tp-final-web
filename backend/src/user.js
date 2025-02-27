@@ -51,11 +51,12 @@ class User {
         let query = `SELECT * FROM users WHERE email='${email}' LIMIT 1`;
         let result = await this._query(query);
         
-        if (result != 'undefined') {
+        if (result.length != 0) {
             this._setAll(result[0].id, this.name = result[0].name, this.email = result[0].email, this.password = result[0].passwd)
+            return result;
         }
         
-        return result;
+        return null;
     }
     
     /* UPDATE */

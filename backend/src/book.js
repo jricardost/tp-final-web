@@ -21,7 +21,7 @@ class Book {
     
     /* PROPERTIES */
     
-    _setAll(id, ownerId, title, author, edition, preservation){
+    setParams(id, ownerId, title, author, edition, preservation){
         this.id = id;
         this.owner = ownerId
         this.title = title
@@ -33,11 +33,11 @@ class Book {
     /* CREATE */
     
     async add(){
-        this.add(this.owner, this.title, this.author, this.edition, this.condition)
+        return this.add(this.owner, this.title, this.author, this.edition, this.condition)
     }
     
-    async add(owner, title, author, edition, codition){
-        let query = `INSERT INTO books (id, ownerId, title, author, edition, preservation) VALUES (NULL, '${owner}', '${title}', '${author}', '${edition}','${codition}')`;
+    async add(owner, title, author, edition, condition){
+        let query = `INSERT INTO books (id, ownerId, title, author, edition, preservation) VALUES (NULL, '${owner}', '${title}', '${author}', '${edition}','${condition}')`;
         console.log(query)
         return this._query(query);
     }
@@ -67,7 +67,7 @@ class Book {
         let result = await this._query(query);
         
         if (result != 'undefined' && result.length > 0) {
-            setAll(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition. this.condition = result[0].preservation)
+            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition, this.condition = result[0].preservation)
         }
         
         return result;
@@ -80,13 +80,13 @@ class Book {
         let result = await this._query(query);
         
         if (result != 'undefined' && result.length > 0) {
-            setAll(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition. this.condition = result[0].preservation)
+            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition. this.condition = result[0].preservation)
         }
         
         return result;
     }
     
-    //Get books now owned by a user
+    //Get books not owned by a user
     async findAvailableTo(id){
         let query = `SELECT * FROM books WHERE NOT ownerId='${id}'`;
         console.log(query)
@@ -107,10 +107,22 @@ class Book {
         let result = await this._query(query);
         
         if (result != 'undefined' && result.length > 0) {
-            console.log(result)
+            return result;
         }
         
-        return result;
+        return null
+    }
+
+    async findAll(){
+        let query = `SELECT * FROM books`;
+        console.log(query)
+        let result = await this._query(query);
+        
+        if (result != 'undefined' && result.length > 0) {
+            return result;
+        }
+        
+       return null
     }
     
     _query(query){
