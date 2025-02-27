@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev" : "node --env-file=.env ./src/index.js 3000",
+    "dev" : "node --env-file=.env ./index.js 3000",
 
     
     "user" : "node --env-file=.env ./src_dev/dev_user.js",
