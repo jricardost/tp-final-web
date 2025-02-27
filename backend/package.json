@@ -1,0 +1,19 @@
+{
+  "name": "trabalho-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev" : "node --env-file=.env ./src/index.js 3000",
+
+    
+    "user" : "node --env-file=.env ./src_dev/dev_user.js",
+    "book" : "node --env-file=.env ./src_dev/dev_book.js"
+  },
+  "author": "João Ricardo S. Teixeira",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "mysql2": "^3.12.0"
+  }
+}
