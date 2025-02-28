@@ -8,6 +8,7 @@ class Book {
         this.author = null
         this.edition = null
         this.condition = null
+        this.image = null
     }
     
     dump(){
@@ -17,27 +18,29 @@ class Book {
         console.log(`author   : ${this.author}`);
         console.log(`edition  : ${this.edition}`);
         console.log(`condition: ${this.condition}`);
+        console.log(`image    : ${this.image}`);
     }
     
     /* PROPERTIES */
     
-    setParams(id, ownerId, title, author, edition, preservation){
+    setParams(id, ownerId, title, author, edition, preservation, image){
         this.id = id;
         this.owner = ownerId
         this.title = title
         this.author = author
         this.edition = edition
         this.condition = preservation
+        this.image = image
     }
     
     /* CREATE */
     
     async addSelf(){
-        return await this.add(this.owner, this.title, this.author, this.edition, this.condition)
+        return await this.add(this.owner, this.title, this.author, this.edition, this.condition, this.image)
     }
     
-    async add(owner, title, author, edition, condition){
-        let query = `INSERT INTO books (id, ownerId, title, author, edition, preservation) VALUES (NULL, '${owner}', '${title}', '${author}', '${edition}','${condition}')`;
+    async add(owner, title, author, edition, condition, image){
+        let query = `INSERT INTO books (id, ownerId, title, author, edition, preservation, image) VALUES (NULL, '${owner}', '${title}', '${author}', '${edition}','${condition}', '${image})`;
         console.log(query)
         return await this._query(query);
     }
@@ -45,7 +48,7 @@ class Book {
     /* UPDATE */
     
     update(){
-        let query = `UPDATE books SET ownerId = '${this.owner}', title = '${this.title}', author = '${this.author}', edition = '${this.edition}', preservation = '${this.condition}' WHERE books.id = ${this.id}`;
+        let query = `UPDATE books SET ownerId = '${this.owner}', title = '${this.title}', author = '${this.author}', edition = '${this.edition}', preservation = '${this.condition}', image = '${this.image}' WHERE books.id = ${this.id}`;
         console.log(query)
         return this._query(query);
     }
@@ -68,7 +71,7 @@ class Book {
         let result = await this._query(query);
         
         if (result && result.length > 0) {
-            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition, this.condition = result[0].preservation)
+            this.setParams(result[0].id, result[0].ownerId, result[0].title, result[0].author, result[0].edition, result[0].preservation, result[0].image)
         }
         
         return result;
@@ -81,7 +84,7 @@ class Book {
         let result = await this._query(query);
         
         if (result && result.length > 0) {
-            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition, this.condition = result[0].preservation)
+            this.setParams(result[0].id, result[0].ownerId, result[0].title, result[0].author, result[0].edition, result[0].preservation, result[0].image)
         }
         
         return result;

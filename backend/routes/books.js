@@ -24,9 +24,9 @@ module.exports = (db) => {
     router.post('/', async (req, res) => {
         
         try {
-            const {ownerId, title, author, edition, preservation } = req.body
+            const {ownerId, title, author, edition, preservation, image} = req.body
             const book = new Book(db)
-            let query = await book.add(ownerId, title, author, edition, preservation)
+            let query = await book.add(ownerId, title, author, edition, preservation, image)
             
             res.json(`{"message": "success"}`)
             return
@@ -72,7 +72,7 @@ module.exports = (db) => {
     
     router.put('/', async (req, res) => {
         try {
-            const {id, ownerId, title, author, edition, preservation } = req.body
+            const {id, ownerId, title, author, edition, preservation, image } = req.body
             
             let book = new Book(db)
             await book.findById(id)
@@ -87,6 +87,7 @@ module.exports = (db) => {
             if (author) book.author = author
             if (edition) book.edition = edition
             if (preservation) book.condition = preservation
+            if (image) book.image = image
 
             let query = await book.update()
 
