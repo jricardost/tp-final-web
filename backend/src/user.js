@@ -24,13 +24,13 @@ class User {
     
     /* CREATE */
     
-    async add(){
+    async addSelf(){
         this.add(this.name, this.email, this.password)
     }
     
     async add(username, email, password){
         let query = `INSERT INTO users (id, name, email, passwd) VALUES (NULL, '${username}', '${email}', '${password}')`;
-        return this._query(query);
+        return await this._query(query);
     }
     
     /* READ */
@@ -61,16 +61,16 @@ class User {
     
     /* UPDATE */
     
-    update(){
+    async update(){
         let query = `UPDATE users SET name = '${this.name}', passwd = '${this.password}' WHERE users.id = ${this.id}`;
-        return this._query(query);
+        return await this._query(query);
     }
     
     /* DELETE */
     
-    delete(){
+    async delete(){
         let query = `DELETE FROM users WHERE users.id = ${this.id}`;
-        return this._query(query);
+        return await this._query(query);
     }
     
     

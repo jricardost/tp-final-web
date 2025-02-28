@@ -23,7 +23,7 @@ class Review {
 
     /* CREATE */
 
-    async add(){
+    async addSelf(){
        // this.add(this.owner, this.title, this.author, this.edition, this.condition)
     }
     

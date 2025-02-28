@@ -52,16 +52,17 @@ app.post('/login', async (req, res) => {
         console.log(`${email} ${password}`)
         
         if (password == null || user.password != password){
-            res.status(401)
-            res.send("Unauthorized")
+            res.status(401).send("Unauthorized")
+            return
         }
         
         console.log(`data: ${JSON.stringify(data)}`)
-        res.end();
+        return
         
     } catch (error) {
         res.status(500).send("Database error")
         console.log(error)
+        return
     }
 })
 
@@ -70,61 +71,108 @@ app.post('/login', async (req, res) => {
 
 // create 
 app.post('/books', async (req, res) => {
-
+    
     try {
         const {ownerId, title, author, edition, preservation } = req.query
         const book = new Book(db)
         let query = await book.add(ownerId, title, author, edition, preservation)
-
+        
         res.send("OK")
-
+        return
+        
     } catch(err){
-
+        
         console.log(err)
         res.status(500)
         res.send("Error")
+        return
     }
-
-    res.end();
+    
 })
 
 app.get('/books', async (req, res) => {
-
-    const book = new Book(db)
-
-    console.log(res.query.length)
-
-    let result = await book.findAll();
     
     try {
+        const book = new Book(db)
+        let result
+        
+
+        if (!req.query || Object.keys(req.query).length === 0){
+            console.log("FIND_ALL")
+            result = await book.findAll();
+        } else {
+            console.log("FIND_FILTERED")
+
+            const { userId,  filter } = req.query
+            
+            if (filter == "my") {
+                result = await book.findOwnedBy(userId)
+            }
+            
+            if (filter == "available"){
+                result = await book.findAvailableTo(userId)
+            }
+        }
         console.log(result)
         res.send(JSON.stringify(result))
+        return
+        
     } catch (err){
         console.log(err)
+        return
     }
-
-    res.end()
 })
 
 app.put('/books', async (req, res) => {
     try {
         const {bookId, ownerId, title, author, edition, preservation } = req.query
-
+        
         const book = new Book(db)
         await book.findById(bookId)
         book.setParams(book.id, ownerId, title, author, edition, preservation) //cannot change book id!
         let query = await book.update()
-
         res.send("OK")
-
+        return
+        
     } catch(err){
-
+        
         console.log(err)
         res.status(500)
         res.send("Error")
+        return
     }
+})
 
-    res.end();
+app.delete('/books', async (req, res) => {
+    try {
+        const book = new Book(db)
+        let result
+        
+
+        if (!req.query || Object.keys(req.query).length === 0){
+            res.status(400)
+            res.send()
+        } else {
+
+            const { bookId } = req.query
+            
+            await book.findById(bookId)
+
+            if (book.id == bookId){
+                book.delete()
+                res.send("Deleted!")
+            } else {
+                res.status(401)
+                res.send('Bad Request!')
+            }
+        }
+        
+        return
+        
+    } catch (err){
+        console.log(err)
+        return
+    }
 })
 
 

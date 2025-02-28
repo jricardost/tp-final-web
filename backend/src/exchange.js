@@ -32,7 +32,7 @@ class Exchange {
     
     /* CREATE */
     
-    async add(){
+    async addSelf(){
         this.add(this.sender, this.senderBook, this.receiver, this.receiverBook, this.status)
     }
     

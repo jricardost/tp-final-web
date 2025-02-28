@@ -32,14 +32,14 @@ class Book {
     
     /* CREATE */
     
-    async add(){
-        return this.add(this.owner, this.title, this.author, this.edition, this.condition)
+    async addSelf(){
+        return await this.add(this.owner, this.title, this.author, this.edition, this.condition)
     }
     
     async add(owner, title, author, edition, condition){
         let query = `INSERT INTO books (id, ownerId, title, author, edition, preservation) VALUES (NULL, '${owner}', '${title}', '${author}', '${edition}','${condition}')`;
         console.log(query)
-        return this._query(query);
+        return await this._query(query);
     }
     
     /* UPDATE */
@@ -53,6 +53,7 @@ class Book {
     /* DELETE */
     
     delete(){
+
         let query = `DELETE FROM books WHERE books.id = ${this.id}`;
         console.log(query)
         return this._query(query);
@@ -66,7 +67,7 @@ class Book {
         console.log(query)
         let result = await this._query(query);
         
-        if (result != 'undefined' && result.length > 0) {
+        if (result && result.length > 0) {
             this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition, this.condition = result[0].preservation)
         }
         
@@ -79,8 +80,8 @@ class Book {
         console.log(query)
         let result = await this._query(query);
         
-        if (result != 'undefined' && result.length > 0) {
-            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition. this.condition = result[0].preservation)
+        if (result && result.length > 0) {
+            this.setParams(result[0].id, this.owner = result[0].ownerId, this.title = result[0].title, this.author = result[0].author, this.edition = result[0].edition, this.condition = result[0].preservation)
         }
         
         return result;
@@ -94,7 +95,7 @@ class Book {
         
         
         
-        if (result != 'undefined' && result.length > 0) {
+        if (result && result.length > 0) {
             console.log(result)
         }
         
@@ -106,7 +107,7 @@ class Book {
         console.log(query)
         let result = await this._query(query);
         
-        if (result != 'undefined' && result.length > 0) {
+        if (result && result.length > 0) {
             return result;
         }
         
@@ -118,7 +119,7 @@ class Book {
         console.log(query)
         let result = await this._query(query);
         
-        if (result != 'undefined' && result.length > 0) {
+        if (result && result.length > 0) {
             return result;
         }
         
