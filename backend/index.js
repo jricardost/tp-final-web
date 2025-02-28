@@ -70,21 +70,21 @@ app.post('/login', async (req, res) => {
 app.post('/register', (req, res) => {
     try {
         const { username, email, password } = req.body
-
+        
         console.log(req.body)
-
+        
         let user = new User(db)
-
+        
         user.findByEmail(email)
-
+        
         if (user.email == null){
             user.add(username, email, password)
         }
-
+        
         res.send(`{"message": "ok"}`)
-
+        
     } catch (err){
-
+        
     }
 })
 
@@ -119,15 +119,15 @@ app.get('/books', async (req, res) => {
         const book = new Book(db)
         let result
         
-
+        
         if (!req.query || Object.keys(req.query).length === 0){
             
             console.log("FIND_ALL")
             result = await book.findAll();
-
+            
         } else {
             console.log("FIND_FILTERED")
-
+            
             const { userId,  filter } = req.query
             
             if (filter == "my") {
@@ -174,16 +174,16 @@ app.delete('/books', async (req, res) => {
         const book = new Book(db)
         let result
         
-
+        
         if (!req.query || Object.keys(req.query).length === 0){
             res.status(400)
             res.send()
         } else {
-
+            
             const { bookId } = req.query
             
             await book.findById(bookId)
-
+            
             if (book.id == bookId){
                 book.delete()
                 res.send("Deleted!")
@@ -201,6 +201,7 @@ app.delete('/books', async (req, res) => {
     }
 })
 
+/* EXCHANGE */
 app.post('/exchange', async (req, res) => {
     try {
         const { sender, senderBook, receiver, receiverBook, status } = req.query;
@@ -217,7 +218,7 @@ app.get('/exchange', async (req, res) => {
     try {
         const exchange = new Exchange(db);
         const result = await exchange.findAll();
-    
+        
         res.json(result);
     } catch (err) {
         console.log(err);
@@ -260,7 +261,7 @@ app.delete('/exchange', async (req, res) => {
 
 app.post('/review', async (req, res) => {
     try {
-        const { userId, bookId, content } = req.query;
+        const { userId, bookId, content } = req.body;
         const review = new Review(db);
         await review.add(userId, bookId, content);
         res.send();
@@ -272,18 +273,48 @@ app.post('/review', async (req, res) => {
 
 app.get('/review', async (req, res) => {
     try {
-        const review = new Review(db);
-        const result = await review.findAll();
-        res.json(result);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        const review = new Review(db)
+        let result = []
+        
+        const { id, userId, bookId } = req.query
+        
+        if (id) {
+            console.log("/review {id}")
+            const reviewById = await review.findById(id);
+            result.push(reviewById)
+
+        } else {   
+            if (userId) {
+                console.log("/review {userId}")
+                const resultByUser = await review.findByUser(userId)
+                result.push(resultByUser)
+            }
+            
+            if (bookId) {
+                console.log("/review {bookId}")
+                const resultByBook = await review.findByBook(bookId)
+                result.push(resultByBook)
+            }
+        }
+
+        if (result.length == 0){
+            console.log("/review {all}")
+            result = await review.findAll();
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(result))
+        return
+        
+    } catch (err){
+        console.log(err)
+        return
     }
 });
 
 app.put('/review', async (req, res) => {
     try {
-        const { id, content } = req.query;
+        const { id, content } = req.body;
         const review = new Review(db);
         await review.findById(id);
         review.setParams(review.id, review.userId, review.bookId, content);
@@ -297,14 +328,14 @@ app.put('/review', async (req, res) => {
 
 app.delete('/review', async (req, res) => {
     try {
-        const { id } = req.query;
+        const { id } = req.body;
         const review = new Review(db);
         await review.findById(id);
-        if (review.id === id) {
+        if (review.id == id) {
             await review.delete();
             res.send("Review Deleted");
         } else {
-            res.status(400).send("Bad Request");
+            res.status(400).send("Bad Request. The specified book doesnt exist.");
         }
     } catch (err) {
         console.log(err);
