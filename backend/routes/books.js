@@ -1,3 +1,19 @@
+/*
+    POST:
+        body = { ownerId, title, author, edition, preservation }
+
+    GET:
+        empty                   : return all books
+        ?userId=1                  : return books owned by user 1
+        ?userId=1&filter=available : return books available to user 1
+
+    PUT:
+        body = { bookId, ownerId, title, author, edition, preservation }  !!! bookId cannot be changed!
+
+    DELETE:
+        body = { id }
+*/
+
 const express = require("express")
 const Book    = require("../src/book")
 
@@ -5,7 +21,7 @@ module.exports = (db) => {
     
     const router  = express.Router()
     
-    router.post('/books', async (req, res) => {
+    router.post('/', async (req, res) => {
         
         try {
             const {ownerId, title, author, edition, preservation } = req.body
@@ -23,7 +39,7 @@ module.exports = (db) => {
         
     })
     
-    router.get('/books', async (req, res) => {
+    router.get('/', async (req, res) => {
         
         try {
             const book = new Book(db)
@@ -36,7 +52,7 @@ module.exports = (db) => {
                 
                 const { userId,  filter } = req.query
                 
-                if (filter == "my") {
+                if (!filter) {
                     result = await book.findOwnedBy(userId)
                 }
                 
@@ -54,14 +70,26 @@ module.exports = (db) => {
         }
     })
     
-    router.put('/books', async (req, res) => {
+    router.put('/', async (req, res) => {
         try {
-            const {bookId, ownerId, title, author, edition, preservation } = req.body
+            const {id, ownerId, title, author, edition, preservation } = req.body
             
-            const book = new Book(db)
-            await book.findById(bookId)
-            book.setParams(book.id, ownerId, title, author, edition, preservation) //cannot change book id!
+            let book = new Book(db)
+            await book.findById(id)
+
+            if (book.id == null){
+                res.status(400).json(`{"error": "bad request"}`) 
+                return   
+            }
+
+            if (ownerId) book.owner = ownerId
+            if (title) book.title = title
+            if (author) book.author = author
+            if (edition) book.edition = edition
+            if (preservation) book.condition = preservation
+
             let query = await book.update()
+
             res.json(`{"message": "success"}`)
             return
             
@@ -72,7 +100,7 @@ module.exports = (db) => {
         }
     })  
    
-    router.delete('/books', async (req, res) => {
+    router.delete('/', async (req, res) => {
         try {
             const book = new Book(db)
             let result
@@ -80,6 +108,7 @@ module.exports = (db) => {
             
             if (!req.body || Object.keys(req.body).length === 0){
                 res.status(400).json(`{"error": "bad request"}`)
+                return
             } else {
                 
                 const { bookId } = req.body
@@ -89,12 +118,12 @@ module.exports = (db) => {
                 if (book.id == bookId){
                     book.delete()
                     res.json(`{"message": "success"}`)
+                    return
                 } else {
                     res.status(400).json(`{"error": "bad request"}`)
+                    return
                 }
             }
-            
-            return
             
         } catch (err){
             res.status(500).json(`{"error": "internal server error"}`)

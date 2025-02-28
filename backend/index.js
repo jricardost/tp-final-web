@@ -20,7 +20,6 @@ db.connect(err => {
     console.log("Conectado!")
 })
 
-
 /* ROTAS */
 
 const bookRoutes     = require("./routes/books")(db)
@@ -53,7 +52,7 @@ app.post('/login', async (req, res) => {
             res.status(401).json(`{"message": "unauthorized"}`)
             return
         }
-        res.json(`{"id":"${user.id}"}`)
+        res.json(`{"id": "${user.id}"}`)
         return
         
     } catch (err) {
@@ -81,6 +80,7 @@ app.post('/register', (req, res) => {
         }
         
         res.json(`{"error": "user already registered"}`)
+        return
         
     } catch (err){
         res.status(500).json(`{"error": "internal server error"}`)

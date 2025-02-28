@@ -1,3 +1,20 @@
+/*
+    POST:
+        body = { id, sender, senderBook, receiver, receiverBook, status }
+
+    GET:
+        empty : return all exchanges
+        id    : return exchange by id
+        ANY(sender, senderBook, receiver, receiverBook)
+
+    PUT:
+        body = { id, sender, senderBook, receiver, receiverBook, status }
+
+    DELETE:
+        body = { id }
+*/
+
+
 const express   = require("express")
 const Exchange  = require("../src/exchange")
 
@@ -5,7 +22,7 @@ module.exports = (db) => {
     
     const router  = express.Router()
     
-    router.post('/exchange', async (req, res) => {
+    router.post('/', async (req, res) => {
         try {
             const { id, sender, senderBook, receiver, receiverBook, status } = req.body;
             const exchange = new Exchange(db);
@@ -27,7 +44,7 @@ module.exports = (db) => {
         }
     });
     
-    router.get('/exchange', async (req, res) => {
+    router.get('/', async (req, res) => {
         try {
             const exchange = new Exchange(db)
             let result = []
@@ -74,13 +91,14 @@ module.exports = (db) => {
         }
     });
     
-    router.put('/exchange', async (req, res) => {
+    router.put('/', async (req, res) => {
         try {
             const { id, sender, senderBook, receiver, receiverBook, status } = req.body;
             const exchange = new Exchange(db);
-            await exchange.findById(id);
-            
-            if (id){
+
+            exchange.findById(id)
+
+            if (!exchange.id){
                 res.status(400).json(`{"error": "Bad request"}`)
                 return
             }
@@ -93,6 +111,7 @@ module.exports = (db) => {
             await exchange.update();
             
             res.json(`{"message": "success"}`);
+            return
             
         } catch (err) {
             res.status(500).json(`{"error": "internal server error"}`)
@@ -101,7 +120,7 @@ module.exports = (db) => {
         }
     });
     
-    router.delete('/exchange', async (req, res) => {
+    router.delete('/', async (req, res) => {
         try {
             const { id } = req.body;
             const exchange = new Exchange(db);
@@ -110,11 +129,11 @@ module.exports = (db) => {
             if (exchange.id == id) {
                 await exchange.delete();
                 res.json(`{"message": "success"}`);
+                return
             } else {
                 res.status(400).json(`{"error": "bad request"}`);
+                return
             }
-            
-            return
             
         } catch (err) {
             res.status(500).json(`{"error": "internal server error"}`)

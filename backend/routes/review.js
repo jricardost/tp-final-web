@@ -1,3 +1,18 @@
+/*
+    POST:
+        body = { userId, bookId, content }
+
+    GET:
+        empty  : return all reviews
+        id     : return review by id
+        ANY(userId, bookId)
+
+    PUT:
+        body = { bookId, ownerId, title, author, edition, preservation }  !!! bookId cannot be changed!
+
+    DELETE:
+        body = { id }
+*/
 const express = require("express")
 const Review  = require("../src/reviews")
 
@@ -5,12 +20,13 @@ module.exports = (db) => {
     
     const router  = express.Router()
     
-    router.post('/review', async (req, res) => {
+    router.post('/', async (req, res) => {
         try {
             const { userId, bookId, content } = req.body;
             const review = new Review(db);
             await review.add(userId, bookId, content);
             res.json(`{"message": "success"}`);
+            return
         } catch (err) {
             res.status(500).json(`{"error": "internal server error"}`)
             console.log(err)
@@ -18,7 +34,7 @@ module.exports = (db) => {
         }
     });
     
-    router.get('/review', async (req, res) => {
+    router.get('/', async (req, res) => {
         try {
             const review = new Review(db)
             let result = []
@@ -55,14 +71,23 @@ module.exports = (db) => {
         }
     });
     
-    router.put('/review', async (req, res) => {
+    router.put('/', async (req, res) => {
         try {
             const { id, content } = req.body;
             const review = new Review(db);
             await review.findById(id);
-            review.setParams(review.id, review.userId, review.bookId, content);
+
+            if (review.id == null){
+                res.json(`{"error": "bad request"}`);
+                return
+            }
+
+            if (content) review.content = content
+
             await review.update();
+
             res.json(`{"message": "success"}`);
+            return
         } catch (err) {
             res.status(500).json(`{"error": "internal server error"}`)
             console.log(err)
@@ -70,7 +95,7 @@ module.exports = (db) => {
         }
     });
     
-    router.delete('/review', async (req, res) => {
+    router.delete('/', async (req, res) => {
         try {
             const { id } = req.body;
             const review = new Review(db);
@@ -78,8 +103,10 @@ module.exports = (db) => {
             if (review.id == id) {
                 await review.delete();
                 res.json(`{"message": "success"}`);
+                return
             } else {
                 res.status(400).json(`{"error": "bad request: the specified book doesn't exist"}`);
+                return
             }
         } catch (err) {
             res.status(500).json(`{"error": "internal server error"}`)
