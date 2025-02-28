@@ -8,10 +8,10 @@
         @click="trade && handleBookClick(book)"
       >
         <img
-          :src="book.image || fallbackImage"
+          :src="book.image || getRandomFallback()"
           :alt="book.title"
           class="book-image"
-          @error="(e) => (e.target.src = fallbackImage)"
+          @error="(e) => (e.target.src = getRandomFallback())"
         />
         <h2 class="book-title">{{ book.title }}</h2>
         <p class="book-author">{{ book.author }}</p>
@@ -29,35 +29,30 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import BookTradeDialog from '../components/BookTradeDialog.vue'
 
-const { trade, books, userBooks } = defineProps({
+const props = defineProps({
   trade: {
     type: Boolean,
     default: false,
   },
-  books: {
-    type: Array,
-    default: () => [
-      { id: 1, title: 'Livro 1', author: 'Autor 1', image: 'https://placehold.co/200x300?text=No+Image' },
-      { id: 2, title: 'Livro 2', author: 'Autor 2', image: 'https://placehold.co/200x300?text=No+Image' },
-      { id: 3, title: 'Livro 3', author: 'Autor 3', image: 'https://placehold.co/200x300?text=No+Image' },
-      { id: 4, title: 'Livro 4', author: 'Autor 4', image: 'https://placehold.co/200x300?text=No+Image' },
-    ],
-  },
-  // Coleção de livros do usuário para seleção na troca
-  userBooks: {
-    type: Array,
-    default: () => [
-      { id: 101, title: 'Meu Livro 1', author: 'Eu', image: 'https://placehold.co/200x300?text=No+Image' },
-      { id: 102, title: 'Meu Livro 2', author: 'Eu', image: 'https://placehold.co/200x300?text=No+Image' },
-      // Adicione mais livros conforme necessário
-    ],
-  },
 })
+const trade = props.trade
 
-const fallbackImage = 'https://placehold.co/200x300?text=No+Image'
+const books = ref([])
+const userBooks = ref([])
+
+function getRandomFallback() {
+  const bgColor = Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, '0')
+  const textColor = Math.floor(Math.random() * 0xffffff)
+    .toString(16)
+    .padStart(6, '0')
+  return `https://placehold.co/200x300/${bgColor}/${textColor}?text=No+Image`
+}
+
 const isModalVisible = ref(false)
 const selectedBook = ref(null)
 
@@ -69,7 +64,12 @@ function handleBookClick(book) {
 }
 
 function confirmTrade(selectedUserBook) {
-  console.log('Troca confirmada para o livro:', selectedBook.value, 'com meu livro:', selectedUserBook)
+  console.log(
+    'Troca confirmada para o livro:',
+    selectedBook.value,
+    'com meu livro:',
+    selectedUserBook
+  )
   closeModal()
 }
 
@@ -77,6 +77,24 @@ function closeModal() {
   isModalVisible.value = false
   selectedBook.value = null
 }
+
+async function fetchBooks() {
+  const userId = localStorage.getItem('userId')
+  try {
+    const response = await fetch(
+      `http://localhost:3000/books?userId=${userId}&filter=my`
+    )
+    const data = await response.json()
+    books.value = data
+    userBooks.value = data
+  } catch (error) {
+    console.error('Erro ao buscar os livros:', error)
+  }
+}
+
+onMounted(() => {
+  fetchBooks()
+})
 </script>
 
 <style scoped>
