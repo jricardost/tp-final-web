@@ -39,13 +39,11 @@ app.listen(port, () => {
     console.log(`\ntp-avaliado-web executando na porta ${port}`)
 })
 
-app.post('/', (req, res) => {
-})
 
 app.post('/login', async (req, res) => {
     try {
         
-        const { email, password } = req.query
+        const { email, password } = req.body
         const user = new User(db)
         const data = await user.findByEmail(email) 
         
@@ -57,12 +55,34 @@ app.post('/login', async (req, res) => {
         }
         
         console.log(`data: ${JSON.stringify(data)}`)
+        res.send(`{"id":"${user.id}"}`)
         return
         
     } catch (error) {
         res.status(500).send("Database error")
         console.log(error)
         return
+    }
+})
+
+app.post('/register', (req, res) => {
+    try {
+        const { username, email, password } = req.body
+
+        console.log(req.body)
+
+        let user = new User(db)
+
+        user.findByEmail(email)
+
+        if (user.email == null){
+            user.add(username, email, password)
+        }
+
+        res.send()
+
+    } catch (err){
+
     }
 })
 
@@ -175,7 +195,115 @@ app.delete('/books', async (req, res) => {
     }
 })
 
+app.post('/exchange', async (req, res) => {
+    try {
+        const { sender, senderBook, receiver, receiverBook, status } = req.query;
+        const exchange = new Exchange(db);
+        await exchange.add(sender, senderBook, receiver, receiverBook, status);
+        res.send("Exchange Created");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
 
+app.get('/exchange', async (req, res) => {
+    try {
+        const exchange = new Exchange(db);
+        const result = await exchange.findAll();
+        res.json(result);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+app.put('/exchange', async (req, res) => {
+    try {
+        const { id, sender, senderBook, receiver, receiverBook, status } = req.query;
+        const exchange = new Exchange(db);
+        await exchange.findById(id);
+        exchange.setParams(id, sender, senderBook, receiver, receiverBook, status);
+        await exchange.update();
+        res.send("Exchange Updated");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+app.delete('/exchange', async (req, res) => {
+    try {
+        const { id } = req.query;
+        const exchange = new Exchange(db);
+        await exchange.findById(id);
+        if (exchange.id === id) {
+            await exchange.delete();
+            res.send("Exchange Deleted");
+        } else {
+            res.status(400).send("Bad Request");
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+/* REVIEW */
+
+app.post('/review', async (req, res) => {
+    try {
+        const { userId, bookId, content } = req.query;
+        const review = new Review(db);
+        await review.add(userId, bookId, content);
+        res.send();
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+app.get('/review', async (req, res) => {
+    try {
+        const review = new Review(db);
+        const result = await review.findAll();
+        res.json(result);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+app.put('/review', async (req, res) => {
+    try {
+        const { id, content } = req.query;
+        const review = new Review(db);
+        await review.findById(id);
+        review.setParams(review.id, review.userId, review.bookId, content);
+        await review.update();
+        res.send("Review Updated");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
+
+app.delete('/review', async (req, res) => {
+    try {
+        const { id } = req.query;
+        const review = new Review(db);
+        await review.findById(id);
+        if (review.id === id) {
+            await review.delete();
+            res.send("Review Deleted");
+        } else {
+            res.status(400).send("Bad Request");
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error");
+    }
+});
 
 /*
 app.post('/', (req, res) => {

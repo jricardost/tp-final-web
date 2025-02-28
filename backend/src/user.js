@@ -11,7 +11,7 @@ class User {
     
     /* PROPERTIES */
     
-    _setAll(id, name, email, password){
+    setAll(id, name, email, password){
         this.id = id;
         this.name = name;
         this.email = email;
@@ -40,7 +40,7 @@ class User {
         let result = await this._query(query);
         
         if (result != 'undefined' && result.length > 0) {
-            this._setAll(result[0].id, this.name = result[0].name, this.email = result[0].email, this.password = result[0].passwd)
+            this.setAll(result[0].id, this.name = result[0].name, this.email = result[0].email, this.password = result[0].passwd)
         }
         
         return result;
@@ -52,7 +52,7 @@ class User {
         let result = await this._query(query);
         
         if (result.length != 0) {
-            this._setAll(result[0].id, this.name = result[0].name, this.email = result[0].email, this.password = result[0].passwd)
+            this.setAll(result[0].id, this.name = result[0].name, this.email = result[0].email, this.password = result[0].passwd)
             return result;
         }
         
