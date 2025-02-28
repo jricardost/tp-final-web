@@ -204,13 +204,22 @@ app.delete('/books', async (req, res) => {
 /* EXCHANGE */
 app.post('/exchange', async (req, res) => {
     try {
-        const { sender, senderBook, receiver, receiverBook, status } = req.query;
+        const { id, sender, senderBook, receiver, receiverBook, status } = req.body;
         const exchange = new Exchange(db);
-        await exchange.add(sender, senderBook, receiver, receiverBook, status);
-        res.send("Exchange Created");
+
+        if (sender && senderBook && receiver && receiverBook){
+            exchange.add(sender, senderBook, receiver, receiverBook, (status ? status : "aguardando"));
+
+            res.send(`{"message": "success"}`)
+            return;
+        } 
+
+        res.status(400).send(`{"error": "bad request"}`)
+        return;
+        
     } catch (err) {
         console.log(err);
-        res.status(500).send("Error");
+        res.status(500).send(`{"error": "internal server error"}`);
     }
 });
 
@@ -269,10 +278,20 @@ app.get('/exchange', async (req, res) => {
 
 app.put('/exchange', async (req, res) => {
     try {
-        const { id, sender, senderBook, receiver, receiverBook, status } = req.query;
+        const { id, sender, senderBook, receiver, receiverBook, status } = req.body;
         const exchange = new Exchange(db);
         await exchange.findById(id);
-        exchange.setParams(id, sender, senderBook, receiver, receiverBook, status);
+
+        if (id){
+            res.status(400).send(`{"error": "Bad request"}`)
+            return
+        }
+
+        if (sender) exchange.sender = sender;
+        if (senderBook) exchange.senderBook = senderBook;
+        if (receiver) exchange.receiver = receiver;
+        if (receiverBook) exchange.receiverBook = receiverBook;
+        if (status) exchange.status = status;
         await exchange.update();
         res.send("Exchange Updated");
     } catch (err) {
@@ -283,18 +302,23 @@ app.put('/exchange', async (req, res) => {
 
 app.delete('/exchange', async (req, res) => {
     try {
-        const { id } = req.query;
+        const { id } = req.body;
         const exchange = new Exchange(db);
         await exchange.findById(id);
-        if (exchange.id === id) {
+
+        if (exchange.id == id) {
             await exchange.delete();
-            res.send("Exchange Deleted");
+            res.send(`{"message": "success"}`);
         } else {
-            res.status(400).send("Bad Request");
+            res.status(400).send(`{"error": "bad request"}`);
         }
+
+        return
+
     } catch (err) {
         console.log(err);
-        res.status(500).send("Error");
+        res.status(500).send(`{"error": "internal server error"}`);
+        return
     }
 });
 
