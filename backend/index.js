@@ -43,28 +43,24 @@ app.listen(port, () => {
 
 
 app.post('/login', async (req, res) => {
+
     try {
-        
         const { email, password } = req.body
         const user = new User(db)
-        const data = await user.findByEmail(email) 
-        
-        console.log(`${email} ${password}`)
-        
+        const data = await user.findByEmail(email)         
         if (password == null || user.password != password){
-            res.status(401).send("Unauthorized")
+            res.status(401).json(`{"message": "unauthorized"}`)
             return
         }
-        
-        console.log(`data: ${JSON.stringify(data)}`)
-        res.send(`{"id":"${user.id}"}`)
+        res.json(`{"id":"${user.id}"}`)
         return
         
-    } catch (error) {
-        res.status(500).send("Database error")
-        console.log(error)
+    } catch (err) {
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
         return
     }
+    
 })
 
 app.post('/register', (req, res) => {
@@ -79,12 +75,16 @@ app.post('/register', (req, res) => {
         
         if (user.email == null){
             user.add(username, email, password)
+            res.json(`{"message": "success"}`)
+            return
         }
         
-        res.send(`{"message": "ok"}`)
+        res.json(`{"error": "user already registered"}`)
         
     } catch (err){
-        
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 })
 
@@ -95,19 +95,16 @@ app.post('/register', (req, res) => {
 app.post('/books', async (req, res) => {
     
     try {
-        const {ownerId, title, author, edition, preservation } = req.query
+        const {ownerId, title, author, edition, preservation } = req.body
         const book = new Book(db)
         let query = await book.add(ownerId, title, author, edition, preservation)
         
-        res.send("OK")
+        res.json(`{"message": "success"}`)
         return
         
     } catch(err){
-        
+        res.status(500).json(`{"error": "internal server error"}`)
         console.log(err)
-        
-        res.status(500)
-        res.send("Error")
         return
     }
     
@@ -121,12 +118,8 @@ app.get('/books', async (req, res) => {
         
         
         if (!req.query || Object.keys(req.query).length === 0){
-            
-            console.log("FIND_ALL")
             result = await book.findAll();
-            
         } else {
-            console.log("FIND_FILTERED")
             
             const { userId,  filter } = req.query
             
@@ -138,12 +131,11 @@ app.get('/books', async (req, res) => {
                 result = await book.findAvailableTo(userId)
             }
         }
-        console.log(result)
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(result))
+        res.json(result)
         return
         
     } catch (err){
+        res.status(500).json(`{"error": "internal server error"}`)
         console.log(err)
         return
     }
@@ -151,20 +143,18 @@ app.get('/books', async (req, res) => {
 
 app.put('/books', async (req, res) => {
     try {
-        const {bookId, ownerId, title, author, edition, preservation } = req.query
+        const {bookId, ownerId, title, author, edition, preservation } = req.body
         
         const book = new Book(db)
         await book.findById(bookId)
         book.setParams(book.id, ownerId, title, author, edition, preservation) //cannot change book id!
         let query = await book.update()
-        res.send("OK")
+        res.json(`{"message": "success"}`)
         return
         
     } catch(err){
-        
+        res.status(500).json(`{"error": "internal server error"}`)
         console.log(err)
-        res.status(500)
-        res.send("Error")
         return
     }
 })
@@ -175,27 +165,26 @@ app.delete('/books', async (req, res) => {
         let result
         
         
-        if (!req.query || Object.keys(req.query).length === 0){
-            res.status(400)
-            res.send()
+        if (!req.body || Object.keys(req.body).length === 0){
+            res.status(400).json(`{"error": "bad request"}`)
         } else {
             
-            const { bookId } = req.query
+            const { bookId } = req.body
             
             await book.findById(bookId)
             
             if (book.id == bookId){
                 book.delete()
-                res.send("Deleted!")
+                res.json(`{"message": "success"}`)
             } else {
-                res.status(401)
-                res.send('Bad Request!')
+                res.status(400).json(`{"error": "bad request"}`)
             }
         }
         
         return
         
     } catch (err){
+        res.status(500).json(`{"error": "internal server error"}`)
         console.log(err)
         return
     }
@@ -210,16 +199,17 @@ app.post('/exchange', async (req, res) => {
         if (sender && senderBook && receiver && receiverBook){
             exchange.add(sender, senderBook, receiver, receiverBook, (status ? status : "aguardando"));
 
-            res.send(`{"message": "success"}`)
+            res.json(`{"message": "success"}`)
             return;
         } 
 
-        res.status(400).send(`{"error": "bad request"}`)
+        res.status(400).json(`{"error": "bad request"}`)
         return;
         
     } catch (err) {
-        console.log(err);
-        res.status(500).send(`{"error": "internal server error"}`);
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 });
 
@@ -231,47 +221,41 @@ app.get('/exchange', async (req, res) => {
         const { id, sender, senderBook, receiver, receiverBook } = req.query
         
         if (id) {
-            console.log("/exchange {id}")
             const reviewById = await exchange.findById(id);
             result.push(reviewById)
 
         } else {   
             if (sender) {
-                console.log("/exchange {sender}")
                 const resultBySender = await exchange.findBySender(sender)
                 result.push(resultBySender)
             }
 
             if (senderBook) {
-                console.log("/exchange {sender}")
                 const resultBySenderBook = await exchange.findBySenderBook(senderBook)
                 result.push(resultBySenderBook)
             }
 
             if (receiver) {
-                console.log("/exchange {receiver}")
                 const resultByReceiver = await exchange.findByReceiver(receiver)
                 result.push(resultByReceiver)
             }
 
             if (receiverBook) {
-                console.log("/exchange {receiver}")
                 const resultByReceiverBook = await exchange.findByReceiverBook(receiverBook)
                 result.push(resultByReceiverBook)
             }
         }
 
         if (result.length == 0){
-            console.log("/exchange {all}")
             result = await exchange.findAll();
         }
 
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(result))
+        res.json(result)
         return
         
     } catch (err){
         console.log(err)
+        res.status(500).json(`{"error": "internal server error"}`)
         return
     }
 });
@@ -283,7 +267,7 @@ app.put('/exchange', async (req, res) => {
         await exchange.findById(id);
 
         if (id){
-            res.status(400).send(`{"error": "Bad request"}`)
+            res.status(400).json(`{"error": "Bad request"}`)
             return
         }
 
@@ -293,10 +277,13 @@ app.put('/exchange', async (req, res) => {
         if (receiverBook) exchange.receiverBook = receiverBook;
         if (status) exchange.status = status;
         await exchange.update();
-        res.send("Exchange Updated");
+
+        res.json(`{"message": "success"}`);
+
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 });
 
@@ -308,16 +295,16 @@ app.delete('/exchange', async (req, res) => {
 
         if (exchange.id == id) {
             await exchange.delete();
-            res.send(`{"message": "success"}`);
+            res.json(`{"message": "success"}`);
         } else {
-            res.status(400).send(`{"error": "bad request"}`);
+            res.status(400).json(`{"error": "bad request"}`);
         }
 
         return
 
     } catch (err) {
-        console.log(err);
-        res.status(500).send(`{"error": "internal server error"}`);
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
         return
     }
 });
@@ -329,10 +316,11 @@ app.post('/review', async (req, res) => {
         const { userId, bookId, content } = req.body;
         const review = new Review(db);
         await review.add(userId, bookId, content);
-        res.send();
+        res.json(`{"message": "success"}`);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 });
 
@@ -344,34 +332,30 @@ app.get('/review', async (req, res) => {
         const { id, userId, bookId } = req.query
         
         if (id) {
-            console.log("/review {id}")
             const reviewById = await review.findById(id);
             result.push(reviewById)
 
         } else {   
             if (userId) {
-                console.log("/review {userId}")
                 const resultByUser = await review.findByUser(userId)
                 result.push(resultByUser)
             }
             
             if (bookId) {
-                console.log("/review {bookId}")
                 const resultByBook = await review.findByBook(bookId)
                 result.push(resultByBook)
             }
         }
 
         if (result.length == 0){
-            console.log("/review {all}")
             result = await review.findAll();
         }
 
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify(result))
+        res.json(result)
         return
         
     } catch (err){
+        res.status(500).json(`{"error": "internal server error"}`)
         console.log(err)
         return
     }
@@ -384,10 +368,11 @@ app.put('/review', async (req, res) => {
         await review.findById(id);
         review.setParams(review.id, review.userId, review.bookId, content);
         await review.update();
-        res.send("Review Updated");
+        res.json(`{"message": "success"}`);
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 });
 
@@ -398,13 +383,14 @@ app.delete('/review', async (req, res) => {
         await review.findById(id);
         if (review.id == id) {
             await review.delete();
-            res.send("Review Deleted");
+            res.json(`{"message": "success"}`);
         } else {
-            res.status(400).send("Bad Request. The specified book doesnt exist.");
+            res.status(400).json(`{"error": "bad request: the specified book doesn't exist"}`);
         }
     } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        res.status(500).json(`{"error": "internal server error"}`)
+        console.log(err)
+        return
     }
 });
 
