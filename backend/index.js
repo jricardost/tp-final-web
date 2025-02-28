@@ -216,13 +216,54 @@ app.post('/exchange', async (req, res) => {
 
 app.get('/exchange', async (req, res) => {
     try {
-        const exchange = new Exchange(db);
-        const result = await exchange.findAll();
+        const exchange = new Exchange(db)
+        let result = []
         
-        res.json(result);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("Error");
+        const { id, sender, senderBook, receiver, receiverBook } = req.query
+        
+        if (id) {
+            console.log("/exchange {id}")
+            const reviewById = await exchange.findById(id);
+            result.push(reviewById)
+
+        } else {   
+            if (sender) {
+                console.log("/exchange {sender}")
+                const resultBySender = await exchange.findBySender(sender)
+                result.push(resultBySender)
+            }
+
+            if (senderBook) {
+                console.log("/exchange {sender}")
+                const resultBySenderBook = await exchange.findBySenderBook(senderBook)
+                result.push(resultBySenderBook)
+            }
+
+            if (receiver) {
+                console.log("/exchange {receiver}")
+                const resultByReceiver = await exchange.findByReceiver(receiver)
+                result.push(resultByReceiver)
+            }
+
+            if (receiverBook) {
+                console.log("/exchange {receiver}")
+                const resultByReceiverBook = await exchange.findByReceiverBook(receiverBook)
+                result.push(resultByReceiverBook)
+            }
+        }
+
+        if (result.length == 0){
+            console.log("/exchange {all}")
+            result = await exchange.findAll();
+        }
+
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify(result))
+        return
+        
+    } catch (err){
+        console.log(err)
+        return
     }
 });
 
