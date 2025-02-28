@@ -16,12 +16,12 @@
       <div class="form-group">
         <FloatLabel>
           <InputText
-            id="senha"
+            id="password"
             type="password"
-            v-model="formData.senha"
+            v-model="formData.password"
             required
           />
-          <label for="senha">Senha</label>
+          <label for="password">Senha</label>
         </FloatLabel>
       </div>
       <Button type="submit">Entrar</Button>
@@ -37,12 +37,12 @@ import FloatLabel from 'primevue/floatlabel'
 
 const formData = ref({
   email: '',
-  senha: ''
+  password: ''
 })
 
 async function login() {
   try {
-    const response = await fetch('http://localhost:3001/auth/login', {
+    const response = await fetch('http://localhost:3001/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData.value)
@@ -50,12 +50,10 @@ async function login() {
 
     if (response.ok) {
       const data = await response.json()
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-      localStorage.setItem('isAdmin', data.user.isAdmin)
+      localStorage.setItem('userId', data.id)
       window.location.href = '/'
     } else {
-      alert('Email ou senha inválidos')
+      alert('Email ou password inválidos')
     }
   } catch (error) {
     console.error(error)

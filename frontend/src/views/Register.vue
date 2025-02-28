@@ -30,22 +30,23 @@ import Dropdown from 'primevue/dropdown'
 import FloatLabel from 'primevue/floatlabel'
 
 const defaultFormData = {
-  nome: '',
+  username: '',
   email: '',
-  senha: '',
+  password: '',
 }
 
 const formData = reactive({ ...defaultFormData })
 
 const fields = [
-  { id: 'nome', label: 'Nome', type: 'text', model: 'nome', required: true },
+  { id: 'username', label: 'Nome', type: 'text', model: 'username', required: true },
   { id: 'email', label: 'Email', type: 'email', model: 'email', required: true },
-  { id: 'senha', label: 'Senha', type: 'password', model: 'senha', required: true },
+  { id: 'password', label: 'Senha', type: 'password', model: 'password', required: true },
 ]
 
 async function submitForm() {
+  console.log(JSON.stringify(formData))
   try {
-    const response = await fetch('http://localhost:3001/auth/registerUsr', {
+    const response = await fetch('http://localhost:3000/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
