@@ -89,7 +89,7 @@ class Book {
     
     //Get books not owned by a user
     async findAvailableTo(id){
-        let query = `SELECT * FROM books WHERE NOT ownerId='${id}'`;
+        let query = `SELECT * FROM books WHERE NOT ownerId='${id}' ORDER BY title, author, edition ASC`;
         console.log(query)
         let result = await this._query(query);
         
@@ -103,7 +103,7 @@ class Book {
     }
     
     async findOwnedBy(id){
-        let query = `SELECT * FROM books WHERE ownerId='${id}'`;
+        let query = `SELECT * FROM books WHERE ownerId='${id}' ORDER BY title, author, edition ASC`;
         console.log(query)
         let result = await this._query(query);
         

@@ -13,7 +13,7 @@
       <!-- Exibe os livros disponíveis para troca, passando a prop trade e a coleção de livros para seleção -->
       <Books
         :trade="true"
-        :books="books"
+        :books="exchangeBooks"
         :userBooks="books"
       />
     </section>
@@ -26,6 +26,7 @@ import Books from '../components/Books.vue'
 
 // Ref que armazenará os livros retornados pela API
 const books = ref([])
+const exchangeBooks = ref([])
 
 // Livros default para teste
 const defaultBooks = [
@@ -64,6 +65,19 @@ async function fetchBooks() {
   } catch (error) {
     console.error('Erro ao buscar os livros:', error)
     books.value = defaultBooks
+  }
+
+  try {
+    const response = await fetch(`http://localhost:3000/books?userId=${userId}&filter=available`)
+    const data = await response.json()
+    if (Array.isArray(data) && data.length > 0) {
+      exchangeBooks.value = data
+    } else {
+      exchangeBooks.value = defaultBooks
+    }
+  } catch (error) {
+    console.error('Erro ao buscar os livros:', error)
+    exchangeBooks.value = defaultBooks
   }
 }
 

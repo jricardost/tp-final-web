@@ -1,5 +1,6 @@
 const express   = require('express')
 const mysql     = require("mysql2")
+const cors      = require("cors")
 
 const Book      = require("./src/book")
 const Exchange  = require("./src/exchange")
@@ -13,6 +14,7 @@ if (process.argv.length > 2){
     port = process.argv[2]
 }
 
+app.use(cors())
 app.use(express.json())
 
 /* DATABASE */
@@ -79,7 +81,7 @@ app.post('/register', (req, res) => {
             user.add(username, email, password)
         }
 
-        res.send()
+        res.send(`{"message": "ok"}`)
 
     } catch (err){
 
@@ -103,6 +105,7 @@ app.post('/books', async (req, res) => {
     } catch(err){
         
         console.log(err)
+        
         res.status(500)
         res.send("Error")
         return
@@ -118,8 +121,10 @@ app.get('/books', async (req, res) => {
         
 
         if (!req.query || Object.keys(req.query).length === 0){
+            
             console.log("FIND_ALL")
             result = await book.findAll();
+
         } else {
             console.log("FIND_FILTERED")
 
@@ -134,6 +139,7 @@ app.get('/books', async (req, res) => {
             }
         }
         console.log(result)
+        res.setHeader('Content-Type', 'application/json');
         res.send(JSON.stringify(result))
         return
         
@@ -211,6 +217,7 @@ app.get('/exchange', async (req, res) => {
     try {
         const exchange = new Exchange(db);
         const result = await exchange.findAll();
+    
         res.json(result);
     } catch (err) {
         console.log(err);
