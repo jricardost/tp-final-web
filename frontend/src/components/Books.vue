@@ -18,7 +18,9 @@
       </div>
     </div>
 
+    <!-- Exibe o modal de troca apenas se o modo trade estiver ativo -->
     <BookTradeDialog
+      v-if="trade"
       v-model:visible="isModalVisible"
       :tradeBook="selectedBook"
       :userBooks="userBooks"
@@ -30,19 +32,27 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import BookTradeDialog from '../components/BookTradeDialog.vue'
+import BookTradeDialog from './BookTradeDialog.vue'
 
 const props = defineProps({
   trade: {
     type: Boolean,
     default: false,
   },
+  books: {
+    type: Array,
+    default: () => [],
+  },
+  userBooks: {
+    type: Array,
+    default: () => [],
+  },
 })
-const trade = props.trade
 
-const books = ref([])
-const userBooks = ref([])
+const isModalVisible = ref(false)
+const selectedBook = ref(null)
 
+// Função para gerar um link de placeholder com cores aleatórias
 function getRandomFallback() {
   const bgColor = Math.floor(Math.random() * 0xffffff)
     .toString(16)
@@ -53,23 +63,16 @@ function getRandomFallback() {
   return `https://placehold.co/200x300/${bgColor}/${textColor}?text=No+Image`
 }
 
-const isModalVisible = ref(false)
-const selectedBook = ref(null)
-
+// Abre o modal de troca se estiver no modo trade
 function handleBookClick(book) {
-  if (trade) {
+  if (props.trade) {
     selectedBook.value = book
     isModalVisible.value = true
   }
 }
 
 function confirmTrade(selectedUserBook) {
-  console.log(
-    'Troca confirmada para o livro:',
-    selectedBook.value,
-    'com meu livro:',
-    selectedUserBook
-  )
+  console.log('Troca confirmada para o livro:', selectedBook.value, 'com meu livro:', selectedUserBook)
   closeModal()
 }
 
@@ -78,22 +81,8 @@ function closeModal() {
   selectedBook.value = null
 }
 
-async function fetchBooks() {
-  const userId = localStorage.getItem('userId')
-  try {
-    const response = await fetch(
-      `http://localhost:3000/books?userId=${userId}&filter=my`
-    )
-    const data = await response.json()
-    books.value = data
-    userBooks.value = data
-  } catch (error) {
-    console.error('Erro ao buscar os livros:', error)
-  }
-}
-
 onMounted(() => {
-  fetchBooks()
+  console.log('Books:', props.books)
 })
 </script>
 
